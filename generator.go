@@ -7,6 +7,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"unicode"
 
 	"errors"
 
@@ -318,51 +319,21 @@ func getStructName(reference *url.URL, structType *jsonschema.Schema, n int) str
 
 // getGolangName strips invalid characters out of golang struct or field names.
 func getGolangName(s string) string {
-	buf := bytes.NewBuffer([]byte{})
-
-	for _, v := range splitOnAll(s, '_', ' ', '.', '-', ':') {
-		buf.WriteString(capitaliseFirstLetter(v))
-	}
-
-	return buf.String()
-}
-
-func splitOnAll(s string, splitItems ...rune) []string {
-	rv := []string{}
-
-	buf := bytes.NewBuffer([]byte{})
-	for _, c := range s {
-		if matches(c, splitItems) {
-			rv = append(rv, buf.String())
-			buf.Reset()
-		} else {
-			buf.WriteRune(c)
+	toSpace := func(r rune) rune {
+		if unicode.IsLetter(r) ||
+			unicode.IsDigit(r) {
+			return r
 		}
+		return ' '
 	}
-	if buf.Len() > 0 {
-		rv = append(rv, buf.String())
-	}
+	s = strings.Map(toSpace, s)
 
-	return rv
-}
-
-func matches(c rune, any []rune) bool {
-	for _, a := range any {
-		if a == c {
-			return true
-		}
-	}
-	return false
-}
-
-func capitaliseFirstLetter(s string) string {
-	if s == "" {
-		return s
+	a := strings.Split(s, " ")
+	for i := range a {
+		a[i] = strings.Title(a[i])
 	}
 
-	prefix := s[0:1]
-	suffix := s[1:]
-	return strings.ToUpper(prefix) + suffix
+	return strings.Join(a, "")
 }
 
 // Struct defines the data required to generate a struct in Go.

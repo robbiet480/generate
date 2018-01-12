@@ -10,41 +10,6 @@ import (
 	"github.com/a-h/generate/jsonschema"
 )
 
-func TestThatCapitalisationOccursCorrectly(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{
-			input:    "ssd",
-			expected: "Ssd",
-		},
-		{
-			input:    "f",
-			expected: "F",
-		},
-		{
-			input:    "fishPaste",
-			expected: "FishPaste",
-		},
-		{
-			input:    "",
-			expected: "",
-		},
-		{
-			input:    "F",
-			expected: "F",
-		},
-	}
-
-	for idx, test := range tests {
-		actual := capitaliseFirstLetter(test.input)
-		if actual != test.expected {
-			t.Errorf("Test %d failed: For input \"%s\", expected \"%s\", got \"%s\"", idx, test.input, test.expected, actual)
-		}
-	}
-}
-
 func TestThatStructsAreNamedWell(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -493,6 +458,16 @@ func TestThatJavascriptKeyNamesCanBeConvertedToValidGoNames(t *testing.T) {
 			description: "Colons are stripped.",
 			input:       "a:b",
 			expected:    "AB",
+		},
+		{
+			description: "@ are stripped.",
+			input:       "@odata.id",
+			expected:    "OdataId",
+		},
+		{
+			description: "@ are stripped.",
+			input:       "PCIeDevices@odata.count",
+			expected:    "PCIeDevicesOdataCount",
 		},
 	}
 
