@@ -3,6 +3,7 @@ package generate
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/url"
 	"path"
 	"sort"
@@ -11,7 +12,7 @@ import (
 
 	"errors"
 
-	"github.com/a-h/generate/jsonschema"
+	"github.com/aktungmak/generate/jsonschema"
 )
 
 // Generator will produce structs from the JSON schema.
@@ -345,6 +346,23 @@ type Struct struct {
 	// Description of the struct
 	Description string
 	Fields      map[string]Field
+}
+
+func (s *Struct) Write(w io.Writer) {
+	fmt.Fprintf(w, "// %s %s\n", s.Name, s.Description)
+	fmt.Fprintf(w, "type %s struct {\n", s.Name)
+
+	for _, f := range s.Fields {
+		// Only apply omitempty if the field is not required.
+		omitempty := ",omitempty"
+		if f.Required {
+			omitempty = ""
+		}
+
+		fmt.Fprintf(w, "%s %s `json:\"%s%s\"`\n", f.Name, f.Type, f.JSONName, omitempty)
+	}
+
+	fmt.Fprintln(w, "}")
 }
 
 // Field defines the data required to generate a field in Go.

@@ -3,6 +3,9 @@ package jsonschema
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
@@ -53,19 +56,35 @@ func (s *Schema) Type() (firstOrDefault string, multiple bool) {
 }
 
 // Parse parses a JSON schema from a string.
-func Parse(schema string) (*Schema, error) {
+func Parse(r io.Reader) (*Schema, error) {
 	s := &Schema{}
-	err := json.Unmarshal([]byte(schema), s)
-
+	err := json.NewDecoder(r).Decode(s)
 	if err != nil {
-		return s, err
+		return nil, err
 	}
 
 	if s.SchemaType == "" {
-		return s, errors.New("JSON schema must have a $schema key")
+		return nil, errors.New("JSON schema must have a $schema key")
 	}
 
-	return s, err
+	return s, nil
+}
+
+func FromFiles(filenames []string) ([]*Schema, error) {
+	schemata := make([]*Schema, len(filenames))
+	for i, name := range filenames {
+		file, err := os.Open(name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read input file %s: %s", name, err)
+		}
+
+		schemata[i], err = Parse(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse file %s: %s", err)
+		}
+	}
+
+	return schemata, nil
 }
 
 // ExtractTypes creates a map of defined types within the schema.
