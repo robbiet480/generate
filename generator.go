@@ -12,7 +12,7 @@ import (
 
 	"errors"
 
-	"github.com/aktungmak/generate/jsonschema"
+	"github.com/robbiet480/generate/jsonschema"
 )
 
 // Generator will produce structs from the JSON schema.
@@ -142,8 +142,9 @@ func getFields(parentTypeKey *url.URL, properties map[string]*jsonschema.Schema,
 			Name:     golangName,
 			JSONName: fieldName,
 			// Look up the types, try references first, then drop to the built-in types.
-			Type:     tn,
-			Required: contains(requiredFields, fieldName),
+			Type:        tn,
+			Required:    contains(requiredFields, fieldName),
+			Description: v.Description,
 		}
 
 		fields[f.Name] = f
@@ -359,7 +360,12 @@ func (s *Struct) Write(w io.Writer) {
 			omitempty = ""
 		}
 
-		fmt.Fprintf(w, "%s %s `json:\"%s%s\"`\n", f.Name, f.Type, f.JSONName, omitempty)
+		brackets := ""
+		if strings.HasPrefix(f.Type, "[]") {
+			brackets = ",brackets"
+		}
+
+		fmt.Fprintf(w, "%s %s `url:\"%s%s%s\"` // %s\n", f.Name, f.Type, f.JSONName, omitempty, brackets, f.Description)
 	}
 
 	fmt.Fprintln(w, "}")
@@ -376,4 +382,6 @@ type Field struct {
 	Type string
 	// Required is set to true when the field is required.
 	Required bool
+	// Description of the field.
+	Description string
 }

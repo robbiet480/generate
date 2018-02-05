@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/aktungmak/generate"
-	"github.com/aktungmak/generate/jsonschema"
+	"github.com/robbiet480/generate"
+	"github.com/robbiet480/generate/jsonschema"
 )
 
 var (
